@@ -1,0 +1,22 @@
+name: Specs & Lint
+on: [push, pull_request]
+jobs:
+  ci:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-10.15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Download source
+        uses: actions/checkout@v2
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+      - name: Install shards
+        run: shards install
+      - name: Run tests
+        run: make test
+      - name: Build
+        run: make debug
+      - name: Check formatting
+        run: crystal tool format; git diff --exit-code

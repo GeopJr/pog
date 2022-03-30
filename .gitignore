@@ -1,0 +1,8 @@
+/docs/
+/lib/
+/bin/
+/.shards/
+*.dwarf
+# Benchmarks exist in their own branch so
+# they don't pollute history.
+/benchmarks/ 
