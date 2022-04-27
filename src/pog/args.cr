@@ -14,6 +14,19 @@ module Pog
     "dir"     => Path.new,
   }
 
+  ARGV_before = [] of String
+
+  ARGV.each_with_index do |arg, i|
+    if (arg.starts_with?("-") || ARGV_before.last? == "-c") && Args["command"] == ""
+      ARGV_before.push(arg)
+    else
+      Args["command"] = arg
+      next_i = i + 1
+      Args["flags"] = ARGV[next_i..] if ARGV.size > next_i
+      break
+    end
+  end
+
   dir = Dir.current
   parser = OptionParser.new do |parser|
     parser.banner = <<-BANNER
@@ -33,20 +46,22 @@ module Pog
     #{"FLAGS:".colorize(:light_yellow)}
     BANNER
     parser.on("-c INPUT", "--cd=INPUT", "Change working directory") do |input|
+      next unless ARGV_before.includes?("-c")
+
       dir = input
       unless Dir.exists?(dir)
         Pog::Logger.fatal("Directory \"#{dir}\" does not exist")
       end
     end
     parser.on("-h", "--help", "Show this help") do
+      next unless ARGV_before.includes?("-h")
+
       puts parser
       exit
     end
     # Everything that doesn't fit the above
     parser.unknown_args do |args|
       Pog::Logger.fatal("Command/Script missing") if args.size == 0
-      Args["command"] = args[0]
-      Args["flags"] = args[1..-1] if args.size > 1
     end
     parser.invalid_option { }
   end
