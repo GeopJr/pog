@@ -68,7 +68,7 @@ module Pog::Run
         command_name = "add"
       end
 
-      command(pm, args.push(command_name))
+      command(pm, args.unshift(command_name))
     else
       dir = Args["dir"].as(Path)
       pkg = dir.join("package.json")
@@ -82,6 +82,21 @@ module Pog::Run
       # commands
       new_env = ENV.to_h
       new_env["PATH"] = new_env["PATH"] + ":#{bin_paths}"
+
+      if command_name.downcase == "run"
+        if args.size == 0
+          Pog::Logger.status("Available Scripts:", true)
+          exit if scripts.nil?
+          scripts.each_key do |script|
+            Pog::Logger.status("#{script}")
+            puts "#{scripts[script]}\n\n"
+          end
+          exit
+        else
+          command_name = args[0]
+          args.shift
+        end
+      end
 
       Pog::Logger.status(command_name, true)
       # If there are no scripts or the script is missing
